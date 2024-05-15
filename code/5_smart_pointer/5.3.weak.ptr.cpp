@@ -7,32 +7,37 @@
 // https://github.com/changkun/modern-cpp-tutorial
 //
 
-
 #include <iostream>
 #include <memory>
 
-class A;
-class B;
+struct A;
+struct B;
 
-class A {
-public:
-    std::shared_ptr<B> pointer;
+struct A {
+    std::weak_ptr<B> pointer; // 不会增加对象的引用计数, 如果是shared_prt，复制会增加引用计数
     ~A() {
-        std::cout << "A was destroyed" << std::endl;
+        std::cout << "A 被销毁" << std::endl;
     }
 };
-class B {
-public:
-    std::shared_ptr<A> pointer;
+
+struct B {
+    std::weak_ptr<A> pointer;
     ~B() {
-        std::cout << "B was destroyed" << std::endl;
+        std::cout << "B 被销毁" << std::endl;
     }
 };
+
 int main() {
-    std::shared_ptr<A> a = std::make_shared<A>();
-    std::shared_ptr<B> b = std::make_shared<B>();
+    auto a = std::make_shared<A>();
+    auto b = std::make_shared<B>();
     a->pointer = b;
     b->pointer = a;
-    
+    std::cout << a.use_count() << std::endl; // 1
+    std::cout << b.use_count() << std::endl; // 1
+
+	// 打印是：
+	//   B 被销毁
+	//   A 被销毁
     return 0;
 }
+
